@@ -9,6 +9,11 @@ import { CSVLink } from 'react-csv';
 
 import BaseTable from 'react-base-table';
 import 'react-base-table/styles.css';
+import Button from '@material-ui/core/Button';
+
+import Paper from '@material-ui/core/Paper';
+import Grid from '@material-ui/core/Grid';
+import { TextField } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -16,6 +21,7 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
       background: '#f7f7f7',
       margin: '0 auto',
+      padding: '2rem',
     },
     demo: {
       backgroundColor: theme.palette.background.paper,
@@ -26,18 +32,45 @@ const useStyles = makeStyles((theme: Theme) =>
     tableRow: {
       padding: '30px',
     },
+
+    paper: {
+      padding: theme.spacing(2),
+      textAlign: 'center',
+      color: theme.palette.text.secondary,
+    },
   })
 );
 
 function App() {
-  const yourKey = '8b93c6f80433709bdb8794371e12a9dd';
-  const yourToken =
-    'e49624b81a3d22b9d781522329083f9317c68c24df111c96baa476dbfe152af6';
-  const listId = '5f7cd582866fc824a3567929';
-  const [csvContent, setCsvContent] = React.useState([{ hello: 'test' }]);
-  const [{ data, loading, error }, refetch] = useAxios(
-    `https://api.trello.com/1/lists/${listId}/cards?key=${yourKey}&token=${yourToken}&attachments=true&comments=true`
+  const classes = useStyles();
+  const [trelloKey, setTrelloKey] = React.useState(
+    ''
+    // INSERT default key
   );
+  const [trelloToken, setTrelloToken] = React.useState(
+    ''
+    // INSERT default key
+  );
+  const [trelloListId, setTrelloListId] = React.useState(
+    ''
+    // INSERT default key
+  );
+  const [csvContent, setCsvContent] = React.useState([{ hello: 'test' }]);
+  const getAxiosURL = (
+    trelloListId: string,
+    trelloKey: string,
+    trelloToken: string
+  ) =>
+    `https://api.trello.com/1/lists/${trelloListId}/cards?key=${trelloKey}&token=${trelloToken}&attachments=true&comments=true`;
+  const [axiosUrl, setAxiosUrl] = React.useState(
+    getAxiosURL(trelloListId, trelloKey, trelloToken)
+  );
+
+  React.useEffect(() => {
+    setAxiosUrl(getAxiosURL(trelloListId, trelloKey, trelloToken));
+  }, [trelloToken, trelloListId, trelloKey]);
+
+  const [{ data, loading, error }, refetch] = useAxios(axiosUrl);
 
   React.useEffect(() => {
     if (data && !loading && !error && data && data.length > 0) {
@@ -85,9 +118,6 @@ ${card?.attachments.map(
     }
   }, [data, loading, error]);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error!</p>;
-
   const columns = [
     {
       key: 'title',
@@ -104,16 +134,67 @@ ${card?.attachments.map(
   ];
 
   return (
-    <>
-      <CSVLink data={csvContent}>Download me</CSVLink>;
-      <BaseTable
-        fixed
-        data={csvContent}
-        width={1400}
-        height={800}
-        columns={columns}
-      ></BaseTable>
-    </>
+    <div className={classes.root}>
+      <Paper></Paper>
+      <Grid container spacing={3}>
+        <Grid item xs={3}>
+          <TextField
+            id='trelloBoardList'
+            label='Trello ListID'
+            variant='outlined'
+            onChange={(event) => setTrelloListId(event.target.value)}
+            value={trelloListId}
+          />
+        </Grid>
+        <Grid item xs={3}>
+          <TextField
+            id='trelloToken'
+            label='Trello Token'
+            variant='outlined'
+            onChange={(event) => {
+              setTrelloToken(event.target.value);
+            }}
+            value={trelloToken}
+          />
+        </Grid>
+        <Grid item xs={3}>
+          <TextField
+            id='trelloKey'
+            label='Trello Key'
+            variant='outlined'
+            onChange={(event) => {
+              setTrelloKey(event.target.value);
+            }}
+            value={trelloKey}
+          />
+        </Grid>
+        <Grid item xs={3}>
+          <Button
+            variant='contained'
+            color='primary'
+            component={CSVLink}
+            data={csvContent}
+          >
+            Download CSV - Gitlab Import
+          </Button>
+        </Grid>
+      </Grid>
+      {error ? (
+        <>Error</>
+      ) : loading ? (
+        <>Loading...</>
+      ) : data ? (
+        <BaseTable
+          fixed
+          data={csvContent}
+          width={1400}
+          height={800}
+          columns={columns}
+        ></BaseTable>
+      ) : (
+        <>No data</>
+      )}
+    </div>
   );
 }
 
