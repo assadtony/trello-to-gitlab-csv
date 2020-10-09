@@ -1,3 +1,17 @@
+# Migrating Cards from Trello to Gitlab
+
+## Description
+
+Create a CSV from Cards from a Specific list from Trello to be imported in Gitlab.
+
+Includes Attachments and Labels
+
+Note:
+
+- The CSV should be opened in Excel or Numbers, checked that everything is fine, resaved as CSV UTF before importing in Prism.
+
+---
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
